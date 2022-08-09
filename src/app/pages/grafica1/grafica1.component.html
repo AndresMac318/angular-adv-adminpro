@@ -1,1 +1,38 @@
-<p>grafica1 works!</p>
+<div class="row">
+
+    <div class="col-6">
+        <app-donut
+            title="Sales"
+            [labels]="['Alcohol 750ml 30unid', 'Vaccine Polio', 'Face mask KN-95']"
+            [datos]="[350, 200, 150]"
+            >
+        </app-donut>
+    </div>
+    
+    <div class="col-6">
+        <app-donut
+            title="Services"
+            [labels]="['Suturing', 'Surgery', 'Medic Valoration']"
+            [datos]="[60, 30, 10]"
+            > 
+        </app-donut>
+    </div>
+
+</div>
+
+<div class="row">
+
+    <div class="col-6">
+        <app-donut
+            title="Clients">
+        </app-donut>
+    </div>
+    
+    <div class="col-6">
+        <app-donut
+            title="Retail"> 
+        </app-donut>
+    </div>
+
+</div>
+
