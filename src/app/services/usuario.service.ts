@@ -7,6 +7,7 @@ import { environment } from 'src/environments/environment';
 
 import { RegisterForm } from '../interfaces/register-form.interface';
 import { LoginForm } from '../interfaces/login-form.interface';
+import { Usuario } from '../models/usuario.model';
 
 //se declara aqui afuera para no tener que usar this.blabla
 const base_url = environment.base_url;
@@ -21,15 +22,50 @@ export class UsuarioService {
 
   //public auth2:any;
 
+  //propiedad creada para almacenar la info del usuario que se logguea
+  public usuario!: Usuario;
+
   constructor(
     private http: HttpClient, 
     private router: Router,
     private ngZone: NgZone
   ) {
+    this.googleInit();
+  }
+
+  get token(): string {
+    return localStorage.getItem('token') || '';
+  }
+  get uid(): string {
+    return this.usuario.uid || '';
   }
 
   // todo: copiar googleInit()
+  googleInit(){
+    // * inicializa google auth
+    google.accounts.id.initialize({
+      client_id: "86908553504-6quiecha7rrhaglga2mvdk6atk5l6i25.apps.googleusercontent.com",
+      //callback: this.handleCredentialResponse
+      callback: (response: any) => {
+        //console.log(response);
+        this.handleCredentialResponse(response);
+      },
+    })
+  }
 
+  handleCredentialResponse(response: any){
+    //console.log("Encoded JWT ID token: " + response.credential);
+    this.loginGoogle(response.credential) //* envia token generado por google
+      .subscribe(resp => {
+
+        //* uso de ngZone
+        this.ngZone.run(() => {
+          //Navegar al Dashboard
+          this.router.navigateByUrl('/');
+        });
+        
+      })
+  }
 
   // todo fin copiar googleInit()
 
@@ -44,22 +80,48 @@ export class UsuarioService {
     })
   }
 
-  //* fn que valida si existe un token de sesion 
+  //* fn que valida si existe un token de sesion y retorna true o false dependiendo el caso  | se usa en el Auth guard
   validarToken(): Observable<boolean> {
-    const token = localStorage.getItem('token') || '';
-
+    
     // ?peticion que renueva el token de sesion
     return this.http.get(`${base_url}/login/renew`, {
       headers: {
-        'x-token': token
+        'x-token': this.token
       }
     }).pipe(
-      tap( (resp: any) => { //respuesta del backend con el token 
-        localStorage.setItem('token', resp.token)
+      //  map( resp => true ),  // se transforma la respuesta a trues
+      map( (resp: any) => { //respuesta del backend con el token 
+        // se obtiene toda la informacion del usuario y se almacena en la variable del servicio usuario
+        //console.log(resp);
+        let { email, google, nombre, img='', role, uid } = resp.usuario;
+        // * Al usar new se crea una nueva instancia y se almacena en el servicio, ademas se pueden usar los metodos de la instancia
+        this.usuario = new Usuario(nombre, email, '', img, google, role, uid );  // img = ''  para evitar errores de que no se encuentra la imagen al validar su extension
+         // uso de metodo del modelo: this.usuario.imprimirInformacion();
+        localStorage.setItem('token', resp.token);
+        return true;
       }),
-      map( resp => true ),//* se transforma la respuesta
+
       //? catchError permite atrapar el error si lo hay
-      catchError( err => of(false) ) //! of : permite crear un observable con base al argumento que se le pase, esto para no romper el ciclo
+      //! of : permite crear un observable con base al argumento que se le pase en este caso boolean, esto para no romper el ciclo
+      catchError( err => of(false))
+      
+      /* 
+      ? se optimizo la sentencia anterior la cual era:
+      *tap((res:any)=>{ ... }),
+      *map(res=>true)
+      ?debido a que en casos particulares se podia llegar a ejectutar primero la validacion antes 
+      ?de que se desestructurara el objeto
+      */
+
+
+      /* 
+      *Este fragmento permite mostrar en consola err del catchError
+      catchError( err => {
+        console.log(err);
+        return of(false);
+      }) 
+      */
+
     );
 
   }
@@ -75,12 +137,27 @@ export class UsuarioService {
     );
   }
 
+  actualizarPerfil(data: {nombre: string, email: string, role: string}){
+
+    data = {
+      ...data,
+      role: this.usuario.role || ''
+    }
+
+    return this.http.put(`${ base_url }/usuarios/${ this.uid }`, data, {
+      headers: {
+        'x-token': this.token
+      }
+    });
+  }
+
   login(formData: LoginForm){
     return this.http.post(`${base_url}/login`, formData)
     .pipe(
+      //* tap: adiciona un efecto 2rio, agrega un paso mas, recibira la respuesta del observable.
       tap((res:any)=>{//? tap recibira la respuesta 100pre regresara un observable, no se modificara el login component
-        console.log(res);
-        //se grabara el token si el login es correcto
+        //console.log(res);
+        //se grabara el token si el login es correcto, el correo ya existe
         localStorage.setItem('token', res.token)
       })
     );

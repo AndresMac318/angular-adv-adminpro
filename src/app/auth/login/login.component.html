@@ -26,6 +26,7 @@
                             type="password" 
                             placeholder="Password"
                             formControlName="password"
+                            autocomplete="current-password"
                         >
                     </div>
                 </div>
@@ -36,6 +37,7 @@
                                 type="checkbox" 
                                 class="filled-in chk-col-light-blue"
                                 formControlName="remember"
+                                autocomplete="on"
                                 >
                             <label for="checkbox-signup"> Remember me </label>
                         </div>
@@ -48,10 +50,10 @@
                         </button>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-xs-12 col-sm-12 col-md-12 m-t-10 text-center">
-                        <!-- no se trabaja con un id sino una ref local #googbtn -->
-                        <button #googleBtn id="buttonDiv"></button> 
+                <div class="form-group">
+                    <div class="col-xs-12 col-sm-12 col-md-12">
+                        <!-- no se trabaja con un id sino una ref local #googbtn viewChild() -->
+                        <span #googleBtn id="buttonDiv"></span> 
                     </div>
                 </div>
                 <div class="form-group m-b-0">

@@ -19,6 +19,7 @@ export class LoginComponent implements AfterViewInit {
   //* se crea la propiedad para recibir la referencia del boton de google del html
   @ViewChild('googleBtn') googleBtn!: ElementRef;
 
+
   //* bandera formulario posteado
   public formSubmitted = false;
 
@@ -39,26 +40,32 @@ export class LoginComponent implements AfterViewInit {
 
   // ? una vez el componente esta inicializado lifecicle
   ngAfterViewInit(): void {
-    this.googleInit();
+    this.startGoogleInit();
   }
 
   // ? construccion del boton de google
-  googleInit(){
+  startGoogleInit(){
     //console.log({esto: this}); el valor de this apunta al componente, pero puede cambiar dependiendo el contexto de this metodo "esto sobre todo en clases typescr..."
-    google.accounts.id.initialize({
+    /* google.accounts.id.initialize({
       client_id: "86908553504-6quiecha7rrhaglga2mvdk6atk5l6i25.apps.googleusercontent.com",
-      // callback: this.handleCredentialResponse
-      callback: (response: any) => this.handleCredentialResponse(response)
-    });
+      //callback: this.handleCredentialResponse
+      callback: (response: any) => {
+        console.log(response);
+        this.handleCredentialResponse(response);
+      }
+    }); */
     
+    this.uservice.googleInit();
+
     google.accounts.id.renderButton(
       //document.getElementById("buttonDiv"),
       this.googleBtn.nativeElement,  //hace la referencia local del boton
-      { theme: "outline", size: "large" }  // customization attributes
+      //{ type: "standard" , theme: "filled_blue, outline", size: "large, medium, small", shape: circle, rectangular, pill, square }  // customization attributes
+      { type: "standard", theme: "outline", size: "large", shape: "circle" }  // customization attributes
     );
   }
 
-  handleCredentialResponse(response: any){
+  /* handleCredentialResponse(response: any){
     //console.log("Encoded JWT ID token: " + response.credential);
     this.uservice.loginGoogle(response.credential) //* envia token generado por google
       .subscribe(resp => {
@@ -68,8 +75,9 @@ export class LoginComponent implements AfterViewInit {
           //Navegar al Dashboard
           this.router.navigateByUrl('/');
         });
+        
       })
-  }
+  } */
 
   crearForm(){
     this.loginForm = this.fb.group({

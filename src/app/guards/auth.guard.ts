@@ -8,17 +8,15 @@ import { tap } from 'rxjs';
 })
 export class AuthGuard implements CanActivate {
 
-  constructor(private usuarioService: UsuarioService, 
-              private router: Router) {
-
-  }
+  constructor(
+    private usuarioService: UsuarioService, 
+    private router: Router
+  ) { }
 
   canActivate(
-    
     route: ActivatedRouteSnapshot,
-    
-    state: RouterStateSnapshot) {
-
+    state: RouterStateSnapshot
+  ) {
       /* this.usuarioService.validarToken().subscribe( resp => {
         console.log(resp);
         
@@ -26,12 +24,13 @@ export class AuthGuard implements CanActivate {
 
       console.log('Paso por canActivated'); */
       
-      return this.usuarioService.validarToken().pipe(
-        tap( estaAutenticado => { //*dispara efecto 2dario
-          if(!estaAutenticado){ //*se disparara este efecto 2rio solo si NO esta autenticado
-            this.router.navigateByUrl('/login');
-          }
-        })
+      return this.usuarioService.validarToken()
+        .pipe( //se usa el pipe para no modificar la respuesta
+          tap( estaAutenticado => { //*dispara efecto 2dario
+            if(!estaAutenticado){ //*se disparara este efecto 2rio solo si NO esta autenticado
+              this.router.navigateByUrl('/login');
+            }
+          })
       )
     }
   

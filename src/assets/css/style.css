@@ -5883,3 +5883,8 @@ File: scss
     text-align: center;
     margin-top: 10px;
     overflow: hidden; } }
+
+    .img-avatar {
+      height: 200px;
+      width: 200px;
+    }
