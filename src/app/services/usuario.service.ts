@@ -1,6 +1,6 @@
 import { Injectable, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { catchError, map, Observable, tap, of } from 'rxjs';
+import { catchError, map, Observable, tap, of, delay } from 'rxjs';
 import { Router } from '@angular/router';
 
 import { environment } from 'src/environments/environment';
@@ -8,6 +8,8 @@ import { environment } from 'src/environments/environment';
 import { RegisterForm } from '../interfaces/register-form.interface';
 import { LoginForm } from '../interfaces/login-form.interface';
 import { Usuario } from '../models/usuario.model';
+import { CargarUsuario } from '../interfaces/cargar-usuarios.interface';
+import Swal from 'sweetalert2';
 
 //se declara aqui afuera para no tener que usar this.blabla
 const base_url = environment.base_url;
@@ -38,6 +40,14 @@ export class UsuarioService {
   }
   get uid(): string {
     return this.usuario.uid || '';
+  }
+
+  get headers(){
+    return {
+      headers: {
+        'x-token': this.token
+      }
+    }
   }
 
   // todo: copiar googleInit()
@@ -144,11 +154,7 @@ export class UsuarioService {
       role: this.usuario.role || ''
     }
 
-    return this.http.put(`${ base_url }/usuarios/${ this.uid }`, data, {
-      headers: {
-        'x-token': this.token
-      }
-    });
+    return this.http.put(`${ base_url }/usuarios/${ this.uid }`, data, this.headers);
   }
 
   login(formData: LoginForm){
@@ -172,6 +178,39 @@ export class UsuarioService {
           localStorage.setItem('token', res.token);
         })
       )
+  }
+
+  cargarUsuarios(desde:number = 0){
+    const url = `${base_url}/usuarios?desde=${desde}`;
+    return this.http.get<CargarUsuario>(url, this.headers)
+      .pipe(
+        //delay(5000), //si se usa delay se puede simular una carga lenta de la data
+        map(resp => {
+          //recibe la respuesta que retorna el backend de tipo CargarUsuario
+          const usuarios = resp.usuarios.map( //map permite transformar el arreglo y regresar uno diferente
+            user => new Usuario(user.nombre, user.email, '', user.img, user.google, user.role, user.uid) // xq si se encierra entre {} se quiebra la app 
+          );
+          return { //se retorna la misma resp para no romper la app resp de tipo CargarUsuario
+            total: resp.total,
+            usuarios
+          };
+        })
+      )
+  }
+
+  eliminarUsuario(usuario: Usuario){
+    const url = `${base_url}/usuarios/${ usuario.uid }`;
+    return this.http.delete(url, this.headers);
+  }
+
+  guardarUsuario(usuario: Usuario){
+
+    /* validacion para no cambiar el rol
+    data = {
+      ...data,
+      role: this.usuario.role || ''
+    } */
+    return this.http.put(`${ base_url }/usuarios/${ usuario.uid }`, usuario, this.headers);
   }
 
 }
