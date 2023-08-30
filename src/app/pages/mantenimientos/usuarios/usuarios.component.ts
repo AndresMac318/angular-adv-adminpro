@@ -41,7 +41,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     //* cuando se cambie una imagen se escuchara el evento y refresh
     this.modalImagenSvc.nuevaImg
       .pipe( // *se usa delay para dar el tiempo de cargar la nueva imagen al servidor y mostrarla en la tabla
-        delay(100)
+        delay(200)
       )  
       .subscribe(img => this.cargarUsuarios());
   }
@@ -77,7 +77,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     }
     this.busquedaSvc.buscar('usuarios', termino)
           .subscribe(resp => {
-            this.usuarios = resp;
+            this.usuarios = resp as Usuario[];
           });
   }
 
@@ -112,9 +112,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   cambiarRole(usuario: Usuario){
     this.usuarioSvc.guardarUsuario(usuario).subscribe(resp => {
       console.log(resp);
-      
     })
-    
   }
 
   abrirModal(usuario: Usuario){
