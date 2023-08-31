@@ -41,6 +41,12 @@ export class BusquedasService {
 
   constructor(private http: HttpClient) { }
 
+  busquedaGlobal(termino: string){
+    const url = `${base_url}/todo/${termino}`;
+    return this.http.get(url, this.headers);
+  }
+
+
   buscar(tipo: 'usuarios' | 'medicos' | 'hospitales', termino: string){
     const url = `${base_url}/todo/coleccion/${tipo}/${termino}`;
     return this.http.get<any[]>(url, this.headers) //la resp de este get sera un array de tipo any

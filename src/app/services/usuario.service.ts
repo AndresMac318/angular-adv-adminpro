@@ -41,6 +41,10 @@ export class UsuarioService {
   get uid(): string {
     return this.usuario.uid || '';
   }
+  
+  get role(): 'ADMIN_ROLE' | 'USER_ROLE' {
+    return this.usuario.role!;
+  }
 
   get headers(){
     return {
@@ -48,6 +52,13 @@ export class UsuarioService {
         'x-token': this.token
       }
     }
+  }
+
+  grabarLocalStorage(token: string, menu: any){
+    localStorage.setItem('token', token);
+
+    //se graba el menu en localstorage
+    localStorage.setItem('menu', JSON.stringify( menu ));
   }
 
   // todo: copiar googleInit()
@@ -81,7 +92,10 @@ export class UsuarioService {
 
   logout() {
     localStorage.removeItem('token');
+    localStorage.removeItem('menu');
     
+    //TODO: borrar menu
+
     google.accounts.id.revoke('andres98belt@gmail.com', () => {
       //* se utiliza ngzone para usar fragmentos de codigo que se ejecutaban por fuera de angular "redireccion" con fn ajenas a angular
       this.ngZone.run(()=>{
@@ -107,7 +121,9 @@ export class UsuarioService {
         // * Al usar new se crea una nueva instancia y se almacena en el servicio, ademas se pueden usar los metodos de la instancia
         this.usuario = new Usuario(nombre, email, '', img, google, role, uid );  // img = ''  para evitar errores de que no se encuentra la imagen al validar su extension
          // uso de metodo del modelo: this.usuario.imprimirInformacion();
-        localStorage.setItem('token', resp.token);
+        
+        this.grabarLocalStorage(resp.token, resp.menu);
+
         return true;
       }),
 
@@ -142,7 +158,7 @@ export class UsuarioService {
       tap((res:any) => {//? tap recibira la respuesta 100pre regresara un observable, no se modificara el login component
         console.log(res);
         //se grabara el token en localstorage si el login es correcto
-        localStorage.setItem('token', res.token)
+        this.grabarLocalStorage(res.token, res.menu);
       })
     );
   }
@@ -164,7 +180,7 @@ export class UsuarioService {
       tap((res:any)=>{//? tap recibira la respuesta 100pre regresara un observable, no se modificara el login component
         //console.log(res);
         //se grabara el token si el login es correcto, el correo ya existe
-        localStorage.setItem('token', res.token)
+        this.grabarLocalStorage(res.token, res.menu);
       })
     );
   }
@@ -175,7 +191,7 @@ export class UsuarioService {
         tap((res:any)=>{//? tap recibira la respuesta 100pre regresara un observable, no se modificara el login component
           //console.log(res);
           //se grabara el token si el login es correcto
-          localStorage.setItem('token', res.token);
+          this.grabarLocalStorage(res.token, res.menu);
         })
       )
   }

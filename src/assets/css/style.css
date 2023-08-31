@@ -5889,6 +5889,11 @@ File: scss
       width: 200px;
     }
 
+    .w50 {
+      width: 50px;
+      border-radius: 20%;
+    }
+
     .w100 {
       width: 100px;
     }
@@ -5919,3 +5924,5 @@ File: scss
       width: 100%;
       z-index: 9999;
     }
+
+    
